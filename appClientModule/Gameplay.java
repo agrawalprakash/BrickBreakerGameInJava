@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,8 +27,11 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener{
 	private int ballXdir = -1;
 	private int ballYdir = -2;
 	
+	private MapGenerator mapGenerator;
+	
 	public Gameplay() {
 		
+		mapGenerator = new MapGenerator(3, 7);
 		addKeyListener(this);
 		setFocusable(true);
 		setFocusTraversalKeysEnabled(play);
@@ -40,6 +44,8 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener{
 		// background
 		gr.setColor(Color.black);
 		gr.fillRect(1,  1, 692, 592);
+		
+		mapGenerator.draw((Graphics2D)gr);
 		
 		// borders
 		gr.setColor(Color.yellow);
@@ -68,6 +74,44 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener{
 			
 			if (new Rectangle(ballposX, ballposY, 20, 20).intersects(new Rectangle(playerX, 550, 100, 8))) {
 				ballYdir = -ballYdir;
+			}
+			
+			A : for (int i = 0; i < mapGenerator.map.length; i++) {
+				for (int j = 0; j < mapGenerator.map[0].length; j++) {
+					
+					if (mapGenerator.map[i][j] > 0) {
+						
+						int brickX = j*mapGenerator.brickWidth + 80;
+						int brickY = i*mapGenerator.brickHeight + 50;
+						
+						int brickWidth = mapGenerator.brickWidth;
+						int brickHeight = mapGenerator.brickHeight;
+						
+						Rectangle rect = new Rectangle
+								(brickX, brickY, brickWidth, brickHeight);
+						Rectangle ballRect = new Rectangle(ballposX, ballposY, 20, 20);
+						Rectangle brickRect = rect;
+						
+						if (ballRect.intersects(brickRect)) {
+							mapGenerator.setBrickValue(0, i, j);
+							totalBricks--;
+							score += 5;
+							
+							if (ballposX + 19 <= brickRect.x ||
+									ballposX + 1 >= brickRect.x + brickRect.width) {
+								ballXdir = -ballXdir;
+							} else {
+								ballYdir = -ballYdir;
+							}
+							
+							break A;
+							
+						}
+						
+					}
+					
+					
+				}
 			}
 			
 			ballposX = ballposX + ballXdir;
